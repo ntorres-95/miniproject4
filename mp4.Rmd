@@ -4,6 +4,13 @@ output: html_document
 ---
 
 ```{r}
-library(tidyverse)
+install.packages("mdsr")
+install.packages("RMySQL")
 ```
+```{r}
+library(mdsr)
+library(RMySQL)
+db <- dbConnect_scidb(dbname = "imdb")
+```
+
 
