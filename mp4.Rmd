@@ -1,16 +1,59 @@
 ---
-title: "miniproject4"
-output: html_document
+title: "Mini Project #4: Who uses Citi Bike?"
+author: Nathalie Torres and Samah Majid
+date: 05/06/18
+output:
+  html_document:
+    code_folding: hide
+    df_print: paged
 ---
 
-```{r}
-install.packages("mdsr")
-install.packages("RMySQL")
-```
-```{r}
+![](https://www.eurocheapo.com/blog/wp-content/uploads/2013/06/citibike_rack.jpg)
+
+
+
+Citi Bike, launched in May 2013, is currently the largest bike sharing program in the United States, with bike stations across Manhattan, Brooklyn, Queens and Jersey City. It evolved as an easy, cheap and convenient way for people to get around the city, and is very simple to use. You must download the app and acquire an annual subscription or a daily pass. You can then find an available bike nearby, get a code from your app or use your member key to unlock it, and take as many rides as you want while your membership or pass is still active, before returning it to any bike station.
+
+Citi Bikes is a lot cheaper than other public transportation options available in the city, more time efficient, allows you to get a workout while you bike to your destination, and most importantly, it is a very sustainable mode of transport. 
+
+It is healthy for you, your bank account and the environment![^1]
+
+For this mini project, we aim to explore the program’s dataset, citibike, to draw connections between the subscribers’ bike drop off location and the location where they picked it up (we assume this is their residential area). We choose West 49th and Broadway, which has the station id number 173, as the bike drop off location for all subscribers. From external research and knowledge, we determine that there are many corporate offices located in the surrounding area of the bike drop off location, and make an assumption that those riding the bikes to West 49th and Broadway will come from expensive neighborhoods. With this assumption in mind, we explore the starting points of the rides, the gender and age of the bikers. For convenience, we sort the data by the longest ride duration times and limit our sample to 15 observations. Only two of the bikers in this dataframe were female. There is clearly a lack of diversity in terms of gender among these bikers whose duration were the longest. However, there was a range of people of different ages who took out the bikes, with the oldest biker born in 1960 and the youngest in 1995. As such, all of the bikers can be considered to be part of the working age group. 
+
+```{r, message = FALSE}
 library(mdsr)
 library(RMySQL)
-db <- dbConnect_scidb(dbname = "imdb")
+db <- dbConnect_scidb(dbname = "citibike")
+dbListTables(db)
 ```
+```{r}
+trips_station_summary <- db %>%
+  dbGetQuery("SELECT duration, start_time, stop_time, start_station_id, name, end_station_id, birth_year, gender
+FROM trips
+JOIN station_summary ON station_id = start_station_id
+WHERE user_type = 'Subscriber' AND end_station_id = '173'
+ORDER BY duration desc
+LIMIT 15;")
+# 173 is Broadway & W 49 St
+```
+```{r}
+trips_station_summary
+```
+From the dataset, we can see that 5 of the starting locations for the bike journeys were on the Upper East Side (UES) and Lower East Side (LES). The neighborhoods within these locations include Lexington Ave & E 63 St and E 76 St & Park Ave, where the average two-bedroom home costs around $2.01 million today.[^2] According to the Community Health Profiles 2015 of UES, of the 226,240 reported population, 79% were white, 92% reported their health to be ‘excellent, ‘very good’ or ‘good’, only 6% had limited English proficiency and life expectancy was 85%. The report also states that 82% of the population living on UES had a college degree and only 7% of the residents lived below the Federal Poverty Level, the second lowest number in the city. These demographics are a good indicator of the wealth of a neighborhood and suggest that those living on UES are generally wealthier and have better education. As such, we conclude that people taking out the bikes from these locations were also very wealthy.[^3] 
+
+As for the Lower East Side (LES), housing prices have increased by 98.9% over these past five years, where the average two-bedroom home costs $1.02 million.[^4]  Females make up 52.7% of the population and it is reported that 63.2% of the population are employed as white collars. However, 36.5% of these individuals have no high school education whereas only 22.6% have continued their education and received their Bachelor’s degrees. The medium income under 25 is $40,333, between 25 and 44 is $53,174, and between 45-64 is $34,500. [^5] Our table shows that two bikers start their journey at University Pl & E14 St and Centre St & Worth St., which are both located on LES. Looking at the birth years of the bikers, we can see that they are 23 and 32, which suggest that they might have as much savings at that point to be living in a more expensive neighborhood such as the UES.
+
+Midtown Manhattan starts above 14th Street and ends at 59th Street. This region consists of neighborhoods Chelsea, Flatiron, Herald Square, Murray Hill, Turtle Bay etc. Midtown has a population of 188,006 males and 203,365 females, where 71% are white collar employees. The majority of the population, around 76.4%, are highly educated, meaning that they have received their Bachelor’s degree and/or graduate degrees. The medium income for those under 25 is $60,222, between 25 and 44 is $95,744, between 45 and 64 is $89,846 and finally, between 45 and 64 is $89,846.[^6] In the last five years, the home prices in this area have increased by 28.3% with the average two-bed home costing $1.26 million today.[^7] In the table above, 8 of the bikers’ starting station was in midtown, although various different locations including E47 St & 2 Ave, W 20 St & 11 Ave, W 47 St & 10 Ave and W 31 St & 7 Ave etc. The ages of people living in these areas vary from 1960 to 1995. Looking at the specific neighborhoods within this region, we can see that older population lived in slightly wealthier neighborhoods. In our table, we can see that the person born in 1960 lives on E25 St & 2nd Ave, which is a more expensive neighborhood than 75.2% of the neighborhoods in New York. 
+
+From the analysis of the neighborhoods the bikers started their journey in, we conclude that the bikers who work in this area generally live in expensive neighborhoods. We see that age plays an important role in which neighborhood the people reside in. In LES, there were more young-aged people, as it more affordable than the other neighborhoods of New York, while there were older people living on the UES as it is more expensive. In addition, the data tells us that more males tend to use these bikes even though females make up a higher percentage of the population. Overall, it seems that New York City residents, who are from these expensive neighborhoods, find Citi Bike beneficial for them and for the city as a whole.[^8]
+
+[^1]: https://www.citibikenyc.com/
+[^2]: https://www.nytimes.com/real-estate/guide/manhattan/upper%20east%20side
+[^3]: https://www1.nyc.gov/assets/doh/downloads/pdf/data/2015chp-mn8.pdf 
+[^4]: https://www.nytimes.com/real-estate/guide/manhattan/lower%20east%20side
+[^5]: https://www.point2homes.com/US/Neighborhood/NY/Manhattan/Lower-East-Side-Demographics.html
+[^6]: https://www.point2homes.com/US/Neighborhood/NY/Manhattan/Midtown-Manhattan-Demographics.html
+[^7]: https://www.nytimes.com/real-estate/guide/manhattan/midtown
+[^8]: https://github.com/ntorres-95/miniproject4
 
 
